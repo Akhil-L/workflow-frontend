@@ -1,19 +1,10 @@
 @import "tailwindcss";
 
-/* Dark mode support */
-@custom-variant dark (&:is(.dark *));
-
-/* Theme basics (safe minimal version) */
-@theme inline {
---font-sans: 'Inter', sans-serif;
---font-heading: 'Plus Jakarta Sans', sans-serif;
-}
-
 /* Base styles */
 @layer base {
 
 * {
-  @apply border-border transition-colors duration-200;
+  @apply border;
   }
 
 body {
