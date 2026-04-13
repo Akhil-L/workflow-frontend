@@ -28,11 +28,17 @@ function Router() {
         );
 
         if (response.ok) {
-          const user = await response.json();
+          const data = await response.json();
+          const user = data.user; // 🔥 IMPORTANT FIX
+
+          if (!user) {
+            logout();
+            setLocation("/auth");
+            return;
+          }
 
           login(user.email, user.role || "worker", user.name);
 
-          // ✅ SIMPLE SAFE REDIRECT (NO CRASH)
           if (user.role === "admin") setLocation("/admin");
           else if (user.role === "client") setLocation("/client");
           else setLocation("/dashboard");
@@ -43,7 +49,7 @@ function Router() {
         }
 
       } catch (err) {
-        console.error(err);
+        console.error("Auth error:", err);
         setLocation("/auth");
       }
     };
