@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route } from "wouter";
 import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -22,54 +22,31 @@ import ClientDashboard from "@/pages/dashboard-client";
 import { TermsPage, PrivacyPage, PayoutPolicyPage } from "@/pages/legal";
 
 function Router() {
-  const [location, setLocation] = useLocation();
-  const { login, logout, fetchTasks, fetchSubmissions } = useStore();
+  const { login, logout } = useStore();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch(
+        const res = await fetch(
           "https://workflow-backend-mdfx.onrender.com/api/me",
           {
-            method: "GET",
             credentials: "include",
           }
         );
 
-        if (response.ok) {
-          const userData = await response.json();
-
-          login(
-            userData.email,
-            userData.role || "worker",
-            userData.name
-          );
-
-          await Promise.all([fetchTasks(), fetchSubmissions()]);
-
-          const role = userData.role || "worker";
-
-          if (role === "admin") setLocation("/admin");
-          else if (role === "client") setLocation("/client");
-          else setLocation("/dashboard");
-
+        if (res.ok) {
+          const user = await res.json();
+          login(user.email, user.role || "worker", user.name);
         } else {
           logout();
-
-          if (
-            location !== "/" &&
-            location !== "/auth"
-          ) {
-            setLocation("/auth");
-          }
         }
-      } catch (error) {
-        console.error("Auth check failed:", error);
+      } catch (err) {
+        console.error(err);
       }
     };
 
     checkAuth();
-  }, []); // ✅ RUN ONLY ONCE
+  }, []);
 
   return (
     <Switch>
