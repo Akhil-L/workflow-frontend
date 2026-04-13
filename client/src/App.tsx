@@ -34,50 +34,61 @@ function Router() {
             "Content-Type": "application/json"
           }
         });
+
         if (response.ok) {
           const userData = await response.json();
-          // Store actual user data and map it to our UI store structure
+
           login(userData.email, userData.role || "worker", userData.name);
-          
-          // Fetch initial data after successful login
-          await Promise.all([
-            fetchTasks(),
-            fetchSubmissions()
-          ]);
-          
-          // Route protection based on role
+
+          // ✅ FIXED: safe data fetching
+          try {
+            await Promise.all([
+              fetchTasks(),
+              fetchSubmissions()
+            ]);
+          } catch (e) {
+            console.error("Data fetch failed:", e);
+          }
+
           const role = userData.role || "worker";
           const path = location;
-          
-          // Worker trying to access admin/client routes
+
           if (role === "worker" && (path.startsWith("/admin") || path.startsWith("/client"))) {
             setLocation("/dashboard");
           } 
-          // Admin trying to access worker/client routes
           else if (role === "admin" && (path.startsWith("/dashboard") || path.startsWith("/training") || path.startsWith("/payouts") || path.startsWith("/client"))) {
             setLocation("/admin");
           }
-          // Client trying to access admin/worker routes
           else if (role === "client" && (path.startsWith("/dashboard") || path.startsWith("/training") || path.startsWith("/payouts") || path.startsWith("/admin"))) {
             setLocation("/client");
           }
-          // Redirect to respective dashboards if on root but logged in (optional but good UX)
           else if (path === "/" || path === "/auth") {
             if (role === "admin") setLocation("/admin");
             else if (role === "client") setLocation("/client");
             else setLocation("/dashboard");
           }
+
         } else {
           logout();
-          if (location !== "/" && location !== "/auth" && !location.startsWith("/about") && !location.startsWith("/contact") && !location.startsWith("/businesses") && !location.startsWith("/terms") && !location.startsWith("/privacy") && !location.startsWith("/payout-policy")) {
-             setLocation("/auth");
+          if (
+            location !== "/" &&
+            location !== "/auth" &&
+            !location.startsWith("/about") &&
+            !location.startsWith("/contact") &&
+            !location.startsWith("/businesses") &&
+            !location.startsWith("/terms") &&
+            !location.startsWith("/privacy") &&
+            !location.startsWith("/payout-policy")
+          ) {
+            setLocation("/auth");
           }
         }
+
       } catch (error) {
         console.error("Auth check failed:", error);
       }
     };
-    
+
     checkAuth();
   }, [location]);
 
