@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useStore } from "@/lib/mock-data";
+
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Auth from "@/pages/auth";
@@ -22,75 +23,53 @@ import { TermsPage, PrivacyPage, PayoutPolicyPage } from "@/pages/legal";
 
 function Router() {
   const [location, setLocation] = useLocation();
-  const { currentUser, login, logout, fetchTasks, fetchSubmissions } = useStore();
+  const { login, logout, fetchTasks, fetchSubmissions } = useStore();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("https://workflow-backend-mdfx.onrender.com/api/me", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json"
+        const response = await fetch(
+          "https://workflow-backend-mdfx.onrender.com/api/me",
+          {
+            method: "GET",
+            credentials: "include",
           }
-        });
+        );
 
         if (response.ok) {
           const userData = await response.json();
 
-          login(userData.email, userData.role || "worker", userData.name);
+          login(
+            userData.email,
+            userData.role || "worker",
+            userData.name
+          );
 
-          // ✅ FIXED: safe data fetching
-          try {
-            await Promise.all([
-              fetchTasks(),
-              fetchSubmissions()
-            ]);
-          } catch (e) {
-            console.error("Data fetch failed:", e);
-          }
+          await Promise.all([fetchTasks(), fetchSubmissions()]);
 
           const role = userData.role || "worker";
-          const path = location;
 
-          if (role === "worker" && (path.startsWith("/admin") || path.startsWith("/client"))) {
-            setLocation("/dashboard");
-          } 
-          else if (role === "admin" && (path.startsWith("/dashboard") || path.startsWith("/training") || path.startsWith("/payouts") || path.startsWith("/client"))) {
-            setLocation("/admin");
-          }
-          else if (role === "client" && (path.startsWith("/dashboard") || path.startsWith("/training") || path.startsWith("/payouts") || path.startsWith("/admin"))) {
-            setLocation("/client");
-          }
-          else if (path === "/" || path === "/auth") {
-            if (role === "admin") setLocation("/admin");
-            else if (role === "client") setLocation("/client");
-            else setLocation("/dashboard");
-          }
+          if (role === "admin") setLocation("/admin");
+          else if (role === "client") setLocation("/client");
+          else setLocation("/dashboard");
 
         } else {
           logout();
+
           if (
             location !== "/" &&
-            location !== "/auth" &&
-            !location.startsWith("/about") &&
-            !location.startsWith("/contact") &&
-            !location.startsWith("/businesses") &&
-            !location.startsWith("/terms") &&
-            !location.startsWith("/privacy") &&
-            !location.startsWith("/payout-policy")
+            location !== "/auth"
           ) {
             setLocation("/auth");
           }
         }
-
       } catch (error) {
         console.error("Auth check failed:", error);
       }
     };
 
     checkAuth();
-  }, [location]);
+  }, []); // ✅ RUN ONLY ONCE
 
   return (
     <Switch>
