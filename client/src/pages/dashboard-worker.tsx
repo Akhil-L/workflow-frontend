@@ -11,24 +11,39 @@ export default function WorkerDashboard() {
 
   const [tasks, setTasks] = useState<any[]>([]);
 
-  // ✅ FETCH FROM BACKEND
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const res = await fetch(
-          "https://workflow-backend-mdfx.onrender.com/api/tasks"
-        );
-        const data = await res.json();
-        setTasks(data.tasks || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+  const fetchTasks = async () => {
+    try {
+      const res = await fetch(
+        "https://workflow-backend-mdfx.onrender.com/api/tasks"
+      );
+      const data = await res.json();
+      setTasks(data.tasks || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
+  useEffect(() => {
     fetchTasks();
   }, []);
 
-  // ✅ SAFETY
+  // ✅ ACCEPT TASK
+  const acceptTask = async (id: number) => {
+    try {
+      await fetch(
+        `https://workflow-backend-mdfx.onrender.com/api/tasks/${id}/accept`,
+        {
+          method: "POST",
+        }
+      );
+
+      // refresh tasks
+      fetchTasks();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (!currentUser) {
     return <div className="p-10 text-center">Loading...</div>;
   }
@@ -51,28 +66,6 @@ export default function WorkerDashboard() {
           Welcome, {currentUser.email}
         </h1>
 
-        {/* ✅ STATS (STATIC FOR NOW) */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              Balance: $0
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              Tasks: {tasks.length}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              Status: Active
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* ✅ TASK LIST */}
         <div>
           <h2 className="text-xl font-semibold mb-3">
             Available Tasks
@@ -89,13 +82,15 @@ export default function WorkerDashboard() {
                     <p className="text-sm text-gray-500">
                       {task.description}
                     </p>
-                    <p className="text-sm">
-                      💰 ${task.amount}
-                    </p>
+                    <p>💰 ${task.amount}</p>
+                    <p>Status: {task.status}</p>
                   </div>
 
-                  <Button>
-                    Take Task
+                  <Button
+                    onClick={() => acceptTask(task.id)}
+                    disabled={task.status !== "open"}
+                  >
+                    {task.status === "open" ? "Take Task" : task.status}
                   </Button>
                 </CardContent>
               </Card>
