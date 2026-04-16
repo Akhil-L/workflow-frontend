@@ -1,13 +1,8 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Base styles */
-@layer base {
-
-* {
-  @apply border;
-  }
-
+/* optional base styles */
 body {
-@apply font-sans antialiased bg-white text-black;
-}
+  font-family: 'Inter', sans-serif;
 }
