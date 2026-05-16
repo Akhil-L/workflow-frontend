@@ -89,8 +89,8 @@ app.use((req, res, next) => {
   // Server port
   const port = parseInt(process.env.PORT || "5000", 10);
 
-  // Start server locally
-  httpServer.listen(port, "127.0.0.1", () => {
+  // Start server
+  httpServer.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });
 })();
