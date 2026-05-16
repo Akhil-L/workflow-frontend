@@ -44,7 +44,7 @@ export default function Auth() {
     if (isRegister) {
       const name = `${values.firstName || ''} ${values.lastName || ''}`.trim() || values.email;
       try {
-        const response = await fetch("http://localhost:4000/api/register", {
+        const response = await fetch("https://lexington-data-entry-platform.onrender.com/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -53,7 +53,7 @@ export default function Auth() {
 
         if (response.ok) {
           toast({ title: "Registration successful", description: "Logging you in..." });
-          const loginResponse = await fetch("http://localhost:4000/api/login", {
+          const loginResponse = await fetch("https://lexington-data-entry-platform.onrender.com/api/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -76,7 +76,7 @@ export default function Auth() {
       }
     } else {
       try {
-        const response = await fetch("http://localhost:4000/api/login", {
+        const response = await fetch("https://lexington-data-entry-platform.onrender.com/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
